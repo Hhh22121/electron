@@ -10,6 +10,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { AuthUser, CurrentUser } from '../auth/auth.guard.js';
 import { TodosService } from './todos.service.js';
 
 @Controller('todos')
@@ -17,28 +18,32 @@ export class TodosController {
   constructor(private readonly todos: TodosService) {}
 
   @Get()
-  findAll() {
-    return this.todos.findAll();
+  findAll(@CurrentUser() user: AuthUser) {
+    return this.todos.findAll(user.id);
   }
 
   @Post()
-  create(@Body() body: { title?: unknown }) {
-    return this.todos.create(requireTitle(body.title));
+  create(@CurrentUser() user: AuthUser, @Body() body: { title?: unknown }) {
+    return this.todos.create(user.id, requireTitle(body.title));
   }
 
   @Patch(':id')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() body: { title?: unknown; done?: unknown }) {
+  update(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: { title?: unknown; done?: unknown },
+  ) {
     if (body.done !== undefined && typeof body.done !== 'boolean') {
       throw new BadRequestException('done must be a boolean');
     }
     const title = body.title === undefined ? undefined : requireTitle(body.title);
-    return this.todos.update(id, { title, done: body.done });
+    return this.todos.update(user.id, id, { title, done: body.done });
   }
 
   @Delete(':id')
   @HttpCode(204)
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.todos.remove(id);
+  remove(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string) {
+    return this.todos.remove(user.id, id);
   }
 }
 

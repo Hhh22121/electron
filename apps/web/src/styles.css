@@ -47,3 +47,16 @@ button {
 .delete { border: none; background: transparent; color: var(--muted); padding: 4px 8px; }
 .delete:hover { color: var(--danger); }
 .error { color: var(--danger); }
+.header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.header h1 { margin: 0; margin-right: auto; }
+.user { color: var(--muted); font-size: 14px; }
+.auth { max-width: 360px; }
+.auth-form { display: flex; flex-direction: column; gap: 10px; }
+.auth-form input {
+  padding: 10px 12px; font-size: 15px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--card); color: var(--text);
+}
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; padding: 10px; }
+button:disabled { opacity: 0.6; cursor: default; }
+.switch { color: var(--muted); font-size: 14px; }
+button.link { border: none; background: none; color: var(--accent); padding: 0; font-size: 14px; }

@@ -1,38 +1,43 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import { DB, Db } from '../db/db.module.js';
 import { Todo, todos } from '../db/schema.js';
 
+/** All operations are scoped to the owning user; other users' todos behave as not found. */
 @Injectable()
 export class TodosService {
   constructor(@Inject(DB) private readonly db: Db) {}
 
-  findAll(): Promise<Todo[]> {
-    return this.db.select().from(todos).orderBy(asc(todos.createdAt));
+  findAll(userId: string): Promise<Todo[]> {
+    return this.db.select().from(todos).where(eq(todos.userId, userId)).orderBy(asc(todos.createdAt));
   }
 
-  async create(title: string): Promise<Todo> {
-    const [todo] = await this.db.insert(todos).values({ title }).returning();
+  async create(userId: string, title: string): Promise<Todo> {
+    const [todo] = await this.db.insert(todos).values({ userId, title }).returning();
     return todo;
   }
 
-  async update(id: string, patch: Partial<Pick<Todo, 'title' | 'done'>>): Promise<Todo> {
-    if (patch.title === undefined && patch.done === undefined) return this.get(id);
-    const [todo] = await this.db.update(todos).set(patch).where(eq(todos.id, id)).returning();
+  async update(userId: string, id: string, patch: Partial<Pick<Todo, 'title' | 'done'>>): Promise<Todo> {
+    if (patch.title === undefined && patch.done === undefined) return this.get(userId, id);
+    const [todo] = await this.db.update(todos).set(patch).where(owned(userId, id)).returning();
     if (!todo) throw notFound(id);
     return todo;
   }
 
-  async remove(id: string): Promise<void> {
-    const deleted = await this.db.delete(todos).where(eq(todos.id, id)).returning({ id: todos.id });
+  async remove(userId: string, id: string): Promise<void> {
+    const deleted = await this.db.delete(todos).where(owned(userId, id)).returning({ id: todos.id });
     if (deleted.length === 0) throw notFound(id);
   }
 
-  private async get(id: string): Promise<Todo> {
-    const [todo] = await this.db.select().from(todos).where(eq(todos.id, id));
+  private async get(userId: string, id: string): Promise<Todo> {
+    const [todo] = await this.db.select().from(todos).where(owned(userId, id));
     if (!todo) throw notFound(id);
     return todo;
   }
+}
+
+function owned(userId: string, id: string) {
+  return and(eq(todos.id, id), eq(todos.userId, userId));
 }
 
 function notFound(id: string) {
