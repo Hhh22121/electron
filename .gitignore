@@ -5,3 +5,4 @@ dist
 !.yarn/releases
 .pnp.*
 apps/desktop/release
+.DS_Store
