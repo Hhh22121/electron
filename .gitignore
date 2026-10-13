@@ -4,4 +4,3 @@ dist
 .yarn/*
 !.yarn/releases
 .pnp.*
-apps/server/data

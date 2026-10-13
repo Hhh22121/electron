@@ -7,12 +7,13 @@
     "apps/desktop"
   ],
   "scripts": {
-    "dev": "concurrently -k -n server,web,desktop \"yarn workspace server dev\" \"yarn workspace web dev\" \"yarn workspace desktop dev\"",
-    "dev:browser": "concurrently -k -n server,web \"yarn workspace server dev\" \"yarn workspace web dev\"",
+    "dev": "yarn db:up && concurrently -k -n server,web,desktop \"yarn workspace server dev\" \"yarn workspace web dev\" \"yarn workspace desktop dev\"",
+    "dev:browser": "yarn db:up && concurrently -k -n server,web \"yarn workspace server dev\" \"yarn workspace web dev\"",
     "build": "yarn workspace server build && yarn workspace web build && yarn workspace desktop build",
-    "start": "yarn build && concurrently -k -n server,desktop \"yarn workspace server start\" \"yarn workspace desktop start\"",
-    "test": "yarn workspace server test",
-    "typecheck": "yarn workspace server typecheck && yarn workspace web typecheck && yarn workspace desktop typecheck"
+    "start": "yarn db:up && yarn build && concurrently -k -n server,desktop \"yarn workspace server start\" \"yarn workspace desktop start\"",
+    "test": "yarn db:up && yarn workspace server test",
+    "typecheck": "yarn workspace server typecheck && yarn workspace web typecheck && yarn workspace desktop typecheck",
+    "db:up": "yarn workspace server db:up"
   },
   "devDependencies": {
     "concurrently": "^10.0.0",

@@ -1,61 +1,40 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
-import fs from 'node:fs';
-import path from 'node:path';
-import { Todo } from './todo.js';
+import { asc, eq } from 'drizzle-orm';
+import { DB, Db } from '../db/db.module.js';
+import { Todo, todos } from '../db/schema.js';
 
-export const DATA_FILE = 'DATA_FILE';
-
-/** Stores todos in memory and persists them to a JSON file on every change. */
 @Injectable()
 export class TodosService {
-  private todos: Todo[];
+  constructor(@Inject(DB) private readonly db: Db) {}
 
-  constructor(@Inject(DATA_FILE) private readonly dataFile: string) {
-    this.todos = this.load();
+  findAll(): Promise<Todo[]> {
+    return this.db.select().from(todos).orderBy(asc(todos.createdAt));
   }
 
-  findAll(): Todo[] {
-    return this.todos;
-  }
-
-  create(title: string): Todo {
-    const todo: Todo = { id: randomUUID(), title, done: false, createdAt: new Date().toISOString() };
-    this.todos.push(todo);
-    this.save();
+  async create(title: string): Promise<Todo> {
+    const [todo] = await this.db.insert(todos).values({ title }).returning();
     return todo;
   }
 
-  update(id: string, patch: Partial<Pick<Todo, 'title' | 'done'>>): Todo {
-    const todo = this.get(id);
-    if (patch.title !== undefined) todo.title = patch.title;
-    if (patch.done !== undefined) todo.done = patch.done;
-    this.save();
+  async update(id: string, patch: Partial<Pick<Todo, 'title' | 'done'>>): Promise<Todo> {
+    if (patch.title === undefined && patch.done === undefined) return this.get(id);
+    const [todo] = await this.db.update(todos).set(patch).where(eq(todos.id, id)).returning();
+    if (!todo) throw notFound(id);
     return todo;
   }
 
-  remove(id: string): void {
-    this.get(id);
-    this.todos = this.todos.filter((t) => t.id !== id);
-    this.save();
+  async remove(id: string): Promise<void> {
+    const deleted = await this.db.delete(todos).where(eq(todos.id, id)).returning({ id: todos.id });
+    if (deleted.length === 0) throw notFound(id);
   }
 
-  private get(id: string): Todo {
-    const todo = this.todos.find((t) => t.id === id);
-    if (!todo) throw new NotFoundException(`Todo ${id} not found`);
+  private async get(id: string): Promise<Todo> {
+    const [todo] = await this.db.select().from(todos).where(eq(todos.id, id));
+    if (!todo) throw notFound(id);
     return todo;
   }
+}
 
-  private load(): Todo[] {
-    try {
-      return JSON.parse(fs.readFileSync(this.dataFile, 'utf8'));
-    } catch {
-      return [];
-    }
-  }
-
-  private save(): void {
-    fs.mkdirSync(path.dirname(this.dataFile), { recursive: true });
-    fs.writeFileSync(this.dataFile, JSON.stringify(this.todos, null, 2));
-  }
+function notFound(id: string) {
+  return new NotFoundException(`Todo ${id} not found`);
 }

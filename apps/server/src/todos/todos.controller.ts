@@ -1,4 +1,15 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { TodosService } from './todos.service.js';
 
 @Controller('todos')
@@ -16,7 +27,7 @@ export class TodosController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() body: { title?: unknown; done?: unknown }) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() body: { title?: unknown; done?: unknown }) {
     if (body.done !== undefined && typeof body.done !== 'boolean') {
       throw new BadRequestException('done must be a boolean');
     }
@@ -26,8 +37,8 @@ export class TodosController {
 
   @Delete(':id')
   @HttpCode(204)
-  remove(@Param('id') id: string) {
-    this.todos.remove(id);
+  remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.todos.remove(id);
   }
 }
 
