@@ -5,8 +5,8 @@
   "type": "module",
   "main": "dist/electron/main.js",
   "scripts": {
-    "dev": "npm run build:main && concurrently -k -n tsc,electron \"tsc -w --preserveWatchOutput\" \"wait-on http://localhost:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
-    "dev:server": "npm run build:main && concurrently -k -n tsc,server \"tsc -w --preserveWatchOutput\" \"node --watch dist/server/standalone.js\"",
+    "dev": "yarn build:main && concurrently -k -n tsc,electron \"tsc -w --preserveWatchOutput\" \"wait-on http://localhost:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
+    "dev:server": "yarn build:main && concurrently -k -n tsc,server \"tsc -w --preserveWatchOutput\" \"node --watch dist/server/standalone.js\"",
     "build:main": "tsc",
     "build": "tsc && node scripts/copy-web.mjs",
     "start": "electron .",
@@ -15,16 +15,18 @@
     "test": "tsc && node --test \"dist/server/**/*.test.js\""
   },
   "dependencies": {
-    "@nestjs/common": "^12.1.3",
-    "@nestjs/core": "^12.1.3",
-    "@nestjs/platform-express": "^12.1.3",
+    "@nestjs/common": "^12.0.0",
+    "@nestjs/core": "^12.0.0",
+    "@nestjs/platform-express": "^12.0.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.0.0"
   },
   "devDependencies": {
-    "@types/node": "^26.6.5",
-    "cross-env": "^10.1.0",
-    "electron": "^44.7.0",
-    "wait-on": "^9.5.1"
+    "@types/node": "^26.0.0",
+    "concurrently": "^10.0.0",
+    "cross-env": "^10.0.0",
+    "electron": "^44.0.0",
+    "typescript": "^7.0.0",
+    "wait-on": "^9.0.0"
   }
 }

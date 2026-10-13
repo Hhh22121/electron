@@ -1,6 +1,6 @@
 # Electron + React + NestJS Todo
 
-Monorepo (npm workspaces):
+Monorepo (Yarn 4 workspaces, `nodeLinker: node-modules`):
 
 ```
 apps/web/       React + Vite UI — plain web app, no Electron dependency
@@ -23,16 +23,16 @@ DELETE /api/todos/:id
 
 ## Run
 
-Requires Node 22+ (`nvm use`).
+Requires Node 22+ (`nvm use`) and Yarn 4 via Corepack (`corepack enable`; version pinned in `packageManager`).
 
 ```bash
-npm install
-npm run dev           # desktop: Vite (web) + Electron with embedded API
-npm run dev:browser   # browser: Vite (web) + standalone API on :3000 → open http://localhost:5173
-npm run server        # standalone API only (PORT, HOST, DATA_FILE env vars)
-npm start             # build web + desktop, launch Electron
-npm test
-npm run typecheck
+yarn install
+yarn dev           # desktop: Vite (web) + Electron with embedded API
+yarn dev:browser   # browser: Vite (web) + standalone API on :3000 → open http://localhost:5173
+yarn server        # standalone API only (PORT, HOST, DATA_FILE env vars)
+yarn start             # build web + desktop, launch Electron
+yarn test
+yarn typecheck
 ```
 
 Desktop data lives in `~/Library/Application Support/electron-nest-react-todo/todos.json` (macOS);
@@ -42,6 +42,7 @@ standalone server data defaults to `apps/desktop/data/todos.json`.
 > your shell has `ELECTRON_RUN_AS_NODE=1` set (some VS Code terminals do). Run `unset ELECTRON_RUN_AS_NODE`.
 
 Notes:
+- Yarn 4 quarantines very fresh package releases (supply-chain guard), so ranges are `^major.0.0` and resolve to the newest non-quarantined version.
 - NestJS 12 is ESM-only, so `apps/desktop` is ESM; the preload stays CommonJS (`.cts`) because sandboxed preloads can't be ESM.
 - `apps/desktop` build copies `apps/web/dist` into `apps/desktop/dist/renderer`, which Electron loads via `file://`.
 - The web CSP allows `127.0.0.1`/`localhost` plus the origin of `VITE_API_URL` at build time.
