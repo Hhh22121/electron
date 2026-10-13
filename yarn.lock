@@ -803,15 +803,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "desktop@workspace:apps/desktop"
   dependencies:
-    "@nestjs/common": "npm:^12.0.0"
-    "@nestjs/core": "npm:^12.0.0"
-    "@nestjs/platform-express": "npm:^12.0.0"
     "@types/node": "npm:^26.0.0"
     concurrently: "npm:^10.0.0"
     cross-env: "npm:^10.0.0"
     electron: "npm:^44.0.0"
-    reflect-metadata: "npm:^0.2.2"
-    rxjs: "npm:^7.0.0"
     typescript: "npm:^7.0.0"
     wait-on: "npm:^9.0.0"
   languageName: unknown
@@ -1860,6 +1855,21 @@ __metadata:
   checksum: 10c0/37986096e8572e2dfaad35a3925fa8da0c0969f8814fd7788e84d4d388bc068cf0c06d1658509788e55bed942a6b6d040a8a267fa92bb9ffb1179f8bacde5fd7
   languageName: node
   linkType: hard
+
+"server@workspace:apps/server":
+  version: 0.0.0-use.local
+  resolution: "server@workspace:apps/server"
+  dependencies:
+    "@nestjs/common": "npm:^12.0.0"
+    "@nestjs/core": "npm:^12.0.0"
+    "@nestjs/platform-express": "npm:^12.0.0"
+    "@types/node": "npm:^26.0.0"
+    concurrently: "npm:^10.0.0"
+    reflect-metadata: "npm:^0.2.2"
+    rxjs: "npm:^7.0.0"
+    typescript: "npm:^7.0.0"
+  languageName: unknown
+  linkType: soft
 
 "setprototypeof@npm:~1.2.0":
   version: 1.2.0

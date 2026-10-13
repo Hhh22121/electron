@@ -2,17 +2,17 @@
   "name": "electron-nest-react-todo",
   "private": true,
   "workspaces": [
+    "apps/server",
     "apps/web",
     "apps/desktop"
   ],
   "scripts": {
-    "dev": "concurrently -k -n web,desktop \"yarn workspace web dev\" \"yarn workspace desktop dev\"",
-    "dev:browser": "concurrently -k -n web,server \"yarn workspace web dev\" \"yarn workspace desktop dev:server\"",
-    "build": "yarn workspace web build && yarn workspace desktop build",
-    "start": "yarn build && yarn workspace desktop start",
-    "server": "yarn workspace desktop build:main && yarn workspace desktop server",
-    "test": "yarn workspace desktop test",
-    "typecheck": "yarn workspace web typecheck && yarn workspace desktop typecheck"
+    "dev": "concurrently -k -n server,web,desktop \"yarn workspace server dev\" \"yarn workspace web dev\" \"yarn workspace desktop dev\"",
+    "dev:browser": "concurrently -k -n server,web \"yarn workspace server dev\" \"yarn workspace web dev\"",
+    "build": "yarn workspace server build && yarn workspace web build && yarn workspace desktop build",
+    "start": "yarn build && concurrently -k -n server,desktop \"yarn workspace server start\" \"yarn workspace desktop start\"",
+    "test": "yarn workspace server test",
+    "typecheck": "yarn workspace server typecheck && yarn workspace web typecheck && yarn workspace desktop typecheck"
   },
   "devDependencies": {
     "concurrently": "^10.0.0",

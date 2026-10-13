@@ -5,21 +5,10 @@
   "type": "module",
   "main": "dist/electron/main.js",
   "scripts": {
-    "dev": "yarn build:main && concurrently -k -n tsc,electron \"tsc -w --preserveWatchOutput\" \"wait-on http://localhost:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
-    "dev:server": "yarn build:main && concurrently -k -n tsc,server \"tsc -w --preserveWatchOutput\" \"node --watch dist/server/standalone.js\"",
-    "build:main": "tsc",
+    "dev": "tsc && concurrently -k -n tsc,electron \"tsc -w --preserveWatchOutput\" \"wait-on http://localhost:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
     "build": "tsc && node scripts/copy-web.mjs",
     "start": "electron .",
-    "server": "node dist/server/standalone.js",
-    "typecheck": "tsc --noEmit",
-    "test": "tsc && node --test \"dist/server/**/*.test.js\""
-  },
-  "dependencies": {
-    "@nestjs/common": "^12.0.0",
-    "@nestjs/core": "^12.0.0",
-    "@nestjs/platform-express": "^12.0.0",
-    "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.0.0"
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/node": "^26.0.0",

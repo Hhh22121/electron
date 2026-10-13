@@ -1,4 +1,4 @@
-// Copies the built web app (apps/web/dist) into dist/renderer so Electron can load it via file://.
+// Copies the built web app (apps/web/dist) into dist/renderer so Electron can serve it from app://bundle/.
 import fs from 'node:fs';
 import path from 'node:path';
 

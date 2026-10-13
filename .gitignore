@@ -1,7 +1,7 @@
 node_modules
 dist
 .env
-apps/desktop/data
 .yarn/*
 !.yarn/releases
 .pnp.*
+apps/server/data

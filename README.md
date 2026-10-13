@@ -1,17 +1,12 @@
 # Electron + React + NestJS Todo
 
-Monorepo (Yarn 4 workspaces, `nodeLinker: node-modules`):
+Client–server app: a NestJS API you deploy to a server, plus one React UI that runs both in the browser and inside an Electron desktop shell.
 
 ```
-apps/web/       React + Vite UI — plain web app, no Electron dependency
-apps/desktop/   Electron + NestJS — the API runs inside Electron's main process
-  electron/     main process + preload (exposes window.api.getUrl())
-  server/       NestJS API (also runnable standalone via server/standalone.ts)
+apps/server/    NestJS REST API (deploy to a VPS / Docker)
+apps/web/       React + Vite UI, talks to the API at VITE_API_URL (baked in at build time)
+apps/desktop/   Electron shell: serves the web build from app://bundle/, no backend inside
 ```
-
-How the web app finds the API:
-- **Inside Electron**: `window.api.getUrl()` → embedded server on a random `127.0.0.1` port.
-- **In a browser**: `VITE_API_URL` (see `apps/web/.env.example`), default `http://127.0.0.1:3000/api`.
 
 API:
 ```
@@ -21,28 +16,58 @@ PATCH  /api/todos/:id   { "title"?: "...", "done"?: true }
 DELETE /api/todos/:id
 ```
 
-## Run
+## Develop
 
 Requires Node 22+ (`nvm use`) and Yarn 4 via Corepack (`corepack enable`; version pinned in `packageManager`).
 
 ```bash
 yarn install
-yarn dev           # desktop: Vite (web) + Electron with embedded API
-yarn dev:browser   # browser: Vite (web) + standalone API on :3000 → open http://localhost:5173
-yarn server        # standalone API only (PORT, HOST, DATA_FILE env vars)
-yarn start             # build web + desktop, launch Electron
+yarn dev           # server :3100 + Vite :5173 + Electron
+yarn dev:browser   # server :3100 + Vite :5173 → open http://localhost:5173
+yarn start         # build everything, run server + Electron
 yarn test
 yarn typecheck
 ```
 
-Desktop data lives in `~/Library/Application Support/electron-nest-react-todo/todos.json` (macOS);
-standalone server data defaults to `apps/desktop/data/todos.json`.
-
 > If Electron starts as plain Node (`does not provide an export named 'BrowserWindow'`),
 > your shell has `ELECTRON_RUN_AS_NODE=1` set (some VS Code terminals do). Run `unset ELECTRON_RUN_AS_NODE`.
 
-Notes:
+## Deploy
+
+### 1. Server
+
+Env vars (see `apps/server/.env.example`): `PORT` (default 3100), `HOST`, `DATA_FILE`, and
+`CORS_ORIGINS` — comma-separated browser origins allowed to call the API. Keep `app://bundle` in it for the desktop app.
+
+```bash
+docker build -f apps/server/Dockerfile -t todo-server .
+docker run -d --restart unless-stopped -p 3000:3000 -v todo-data:/data \
+  -e CORS_ORIGINS=https://todo.example.com,app://bundle todo-server
+```
+
+Put nginx/Caddy in front for HTTPS (e.g. `https://api.todo.example.com` → `localhost:3000`).
+Data is a JSON file on the `/data` volume — fine for a demo; switch to a real database before multiple users rely on it.
+
+### 2. Web
+
+```bash
+VITE_API_URL=https://api.todo.example.com/api yarn workspace web build
+```
+
+Upload `apps/web/dist` to any static host (Vercel, Netlify, nginx). The CSP automatically allows the `VITE_API_URL` origin.
+
+### 3. Desktop
+
+Build the web app with the production `VITE_API_URL` first, then build the desktop shell (it copies `apps/web/dist`):
+
+```bash
+VITE_API_URL=https://api.todo.example.com/api yarn workspace web build
+yarn workspace desktop build
+```
+
+Packaging into `.dmg` / `.exe` installers (electron-builder) is not set up yet.
+
+## Notes
+
+- NestJS 12 is ESM-only, so the workspaces are ESM (`"type": "module"`).
 - Yarn 4 quarantines very fresh package releases (supply-chain guard), so ranges are `^major.0.0` and resolve to the newest non-quarantined version.
-- NestJS 12 is ESM-only, so `apps/desktop` is ESM; the preload stays CommonJS (`.cts`) because sandboxed preloads can't be ESM.
-- `apps/desktop` build copies `apps/web/dist` into `apps/desktop/dist/renderer`, which Electron loads via `file://`.
-- The web CSP allows `127.0.0.1`/`localhost` plus the origin of `VITE_API_URL` at build time.

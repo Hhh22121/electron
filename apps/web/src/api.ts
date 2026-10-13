@@ -5,12 +5,11 @@ export interface Todo {
   createdAt: string;
 }
 
-let baseUrl: Promise<string> | undefined;
+// Baked in at build time; the same build runs in the browser and inside Electron.
+const baseUrl: string = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:3100/api';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  // Inside Electron the embedded server picks a random port; in a browser use VITE_API_URL.
-  baseUrl ??= window.api?.getUrl() ?? Promise.resolve(import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:3000/api');
-  const res = await fetch(`${await baseUrl}${path}`, {
+  const res = await fetch(`${baseUrl}${path}`, {
     ...init,
     headers: { 'Content-Type': 'application/json', ...init?.headers },
   });
