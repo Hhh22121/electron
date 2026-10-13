@@ -8,14 +8,18 @@
     "dev": "tsc && concurrently -k -n tsc,electron \"tsc -w --preserveWatchOutput\" \"wait-on http://localhost:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
     "build": "tsc && node scripts/copy-web.mjs",
     "start": "electron .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "dist": "yarn build && electron-builder --publish never"
   },
   "devDependencies": {
     "@types/node": "^26.0.0",
     "concurrently": "^10.0.0",
     "cross-env": "^10.0.0",
-    "electron": "^44.0.0",
+    "electron": "44.7.0",
+    "electron-builder": "^26.0.0",
     "typescript": "^7.0.0",
     "wait-on": "^9.0.0"
-  }
+  },
+  "description": "Todo desktop app",
+  "author": "Hhh22121"
 }

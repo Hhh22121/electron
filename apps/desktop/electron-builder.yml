@@ -1,0 +1,22 @@
+# Packages the Electron shell. The web app must already be built with the production VITE_API_URL
+# (`yarn dist:desktop` from the repo root does both).
+appId: com.hhh22121.todo
+productName: Todo
+directories:
+  output: release
+files:
+  - dist/**/*
+  - package.json
+  - "!**/*.map"
+mac:
+  category: public.app-category.productivity
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+win:
+  target: nsis
+linux:
+  target: AppImage
+  category: Utility
+# Uploading to GitHub Releases is done by .github/workflows/release.yml.
+publish: null

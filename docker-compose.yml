@@ -27,7 +27,12 @@ services:
       JWT_SECRET: ${JWT_SECRET:-change-me}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,app://bundle}
     ports:
-      - "3000:3000"
+      - "${SERVER_PORT:-3100}:3000"
+    healthcheck:
+      # Any non-5xx response (401 without a token) means the API is up.
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/todos').then(r => process.exit(r.status < 500 ? 0 : 1), () => process.exit(1))"]
+      interval: 2s
+      retries: 15
     depends_on:
       db:
         condition: service_healthy

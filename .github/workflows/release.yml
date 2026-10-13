@@ -1,0 +1,40 @@
+# Builds desktop installers on every OS when a version tag is pushed, and attaches them to a GitHub Release.
+#   git tag v1.0.0 && git push origin v1.0.0
+# Set the repository variable VITE_API_URL (Settings → Secrets and variables → Actions → Variables)
+# to the deployed API, e.g. https://api.todo.example.com/api.
+name: Release desktop
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable
+      - run: yarn install --immutable
+      - run: yarn workspace web build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+      - run: yarn workspace desktop dist
+        env:
+          # No signing certificate configured yet: build unsigned (macOS gets an ad-hoc signature).
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            apps/desktop/release/*.dmg
+            apps/desktop/release/*.exe
+            apps/desktop/release/*.AppImage

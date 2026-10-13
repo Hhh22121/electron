@@ -13,7 +13,8 @@
     "start": "yarn db:up && yarn build && concurrently -k -n server,desktop \"yarn workspace server start\" \"yarn workspace desktop start\"",
     "test": "yarn db:up && yarn workspace server test",
     "typecheck": "yarn workspace server typecheck && yarn workspace web typecheck && yarn workspace desktop typecheck",
-    "db:up": "yarn workspace server db:up"
+    "db:up": "yarn workspace server db:up",
+    "dist:desktop": "yarn workspace web build && yarn workspace desktop dist"
   },
   "devDependencies": {
     "concurrently": "^10.0.0",
